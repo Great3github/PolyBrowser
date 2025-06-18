@@ -1,0 +1,1 @@
+installcmd = 'py -m pip install PyQt5 PyQtWebEngine'
