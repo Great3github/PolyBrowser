@@ -1,7 +1,9 @@
+CurrentVersion = "1.2"
 import subprocess
 from msg import cmdconfig, msgconfig
 from dialog import CustomDialog
 import browser_config
+from internal import about
 from subprocess import DEVNULL, STDOUT
 try:
     subprocess.run(cmdconfig.installcmd, stdout=DEVNULL, stderr=DEVNULL)
@@ -34,25 +36,26 @@ class SimpleBrowser(QMainWindow):
         self.url_bar = QLineEdit()
         self.url_bar.returnPressed.connect(self.navigateToURL)
         self.url_bar.setDisabled(browser_config.urlBarDisabled)
-        self.go_btn = QPushButton(msgconfig.ButtonText.homeButton)
-        self.go_btn.clicked.connect(self.navigate_to_home)
-
-        self.back_btn = QPushButton(msgconfig.ButtonText.backButton)
-        self.back_btn.clicked.connect(self.browser.back)
-
-        self.forward_btn = QPushButton(msgconfig.ButtonText.forwardButton)
-        self.forward_btn.clicked.connect(self.browser.forward)
-
-        self.refresh_btn = QPushButton(msgconfig.ButtonText.refreshButton)
-        self.refresh_btn.clicked.connect(self.browser.reload)
+        if browser_config.showHomeButton:
+            self.go_btn = QPushButton(msgconfig.ButtonText.homeButton)
+            self.go_btn.clicked.connect(self.navigate_to_home)
+        if browser_config.showBackButton:
+            self.back_btn = QPushButton(msgconfig.ButtonText.backButton)
+            self.back_btn.clicked.connect(self.browser.back)
+        if browser_config.showForwardButton:
+            self.forward_btn = QPushButton(msgconfig.ButtonText.forwardButton)
+            self.forward_btn.clicked.connect(self.browser.forward)
+        if browser_config.showRefreshButton:
+            self.refresh_btn = QPushButton(msgconfig.ButtonText.refreshButton)
+            self.refresh_btn.clicked.connect(self.browser.reload)
 
         # Layout for navigation bar
         nav_layout = QHBoxLayout()
-        nav_layout.addWidget(self.back_btn)
-        nav_layout.addWidget(self.forward_btn)
-        nav_layout.addWidget(self.refresh_btn)
+        if browser_config.showBackButton: nav_layout.addWidget(self.back_btn)
+        if browser_config.showForwardButton: nav_layout.addWidget(self.forward_btn)
+        if browser_config.showRefreshButton: nav_layout.addWidget(self.refresh_btn)
         nav_layout.addWidget(self.url_bar)
-        nav_layout.addWidget(self.go_btn)
+        if browser_config.showHomeButton: nav_layout.addWidget(self.go_btn)
 
         # Main layout
         main_layout = QVBoxLayout()
@@ -67,6 +70,17 @@ class SimpleBrowser(QMainWindow):
         # Update URL bar when URL changes
         self.browser.urlChanged.connect(self.update_url_bar)
     def navigateToURL(self):
+        if self.url_bar.text().startswith("pb:") and browser_config.pbUrlsEnabled:
+            if self.url_bar.text() == "pb:exit" and browser_config.exitURLEnabled: exit()
+            elif self.url_bar.text() == "pb:exit": self.browser.setUrl(QUrl(""))
+            if self.url_bar.text() == "pb:about" and browser_config.abouURLEnabled: about.ShowAbout()
+            elif self.url_bar.text() == "pb:about": self.browser.setUrl(QUrl(""))
+
+        for url in browser_config.url_blocklist:
+            if url in self.url_bar.text():
+                CustomDialog.NewOkDialog(msgconfig.ErrorMsg.siteBlockedError[0], msgconfig.ErrorMsg.siteBlockedError[1])
+                self.url_bar.setText("")
+                return
         if not self.url_bar.text().startswith(("https://", "http://")):
             self.url_bar.setText("http://" + self.url_bar.text())
         self.browser.setUrl(QUrl(self.url_bar.text()))
@@ -77,9 +91,6 @@ class SimpleBrowser(QMainWindow):
 
     def update_url_bar(self, q):
         self.url_bar.setText(q.toString())
-        if str(self.browser.url().toString()).startswith(tuple(browser_config.url_blocklist)):
-            self.browser.setUrl(QUrl(browser_config.homepage))
-            CustomDialog.NewOkDialog(msgconfig.ErrorMsg.siteBlockedError[0], msgconfig.ErrorMsg.siteBlockedError[1])
         
     
 

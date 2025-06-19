@@ -1,3 +1,4 @@
+CURRENTVERSION="1.2"
 # title, msg
 openBrowserConfirmation = ["", "Are you sure you want to start the browser?"]
 # error msgs
@@ -13,3 +14,5 @@ class ButtonText():
     backButton = "Back"
     forwardButton = "Forward"
     refreshButton = "Refresh"
+class InternalPageContent():
+    aboutText = ["About This Program", f"Poly Browser version {CURRENTVERSION}\nDeveloped by Matt Fichter with the help of AI"]
