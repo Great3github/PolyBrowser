@@ -18,3 +18,27 @@ class NewYesNoDialog(QDialog):
         layout.addWidget(message)
         layout.addWidget(self.buttonBox)
         self.setLayout(layout)
+class NewOkCancelDialog(QDialog):
+    def __init__(self, title, text):
+        super().__init__()
+
+        self.setWindowTitle(title)
+
+        QBtn = QDialogButtonBox.Ok | QDialogButtonBox.Cancel
+
+        self.buttonBox = QDialogButtonBox(QBtn)
+        self.buttonBox.accepted.connect(self.accept)
+        self.buttonBox.rejected.connect(self.reject)
+
+        layout = QVBoxLayout()
+        message = QLabel(text)
+        layout.addWidget(message)
+        layout.addWidget(self.buttonBox)
+        self.setLayout(layout)
+class NewOkDialog():
+    def __init__(self, title, text):
+        dialog = QMessageBox()
+        dialog.setWindowTitle(str(title))
+        dialog.setText(str(text))
+        dialog.setStandardButtons(QMessageBox.Ok)
+        dialog.exec_()

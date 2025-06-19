@@ -1,33 +1,39 @@
 import subprocess
 from msg import cmdconfig, msgconfig
+from dialog import CustomDialog
 import browser_config
 from subprocess import DEVNULL, STDOUT
-try: subprocess.run(cmdconfig.installcmd, stdout=DEVNULL, stderr=DEVNULL)
-except Exception as e: print(msgconfig.ErrorMsg.defaultError)
-from PyQt5.QtWidgets import QApplication, QMainWindow, QLineEdit, QPushButton, QHBoxLayout, QVBoxLayout, QWidget, QMessageBox, QDialog, QLabel,QDialogButtonBox
-from PyQt5.QtWebEngineWidgets import QWebEngineView
-from PyQt5.QtCore import QUrl
+try:
+    subprocess.run(cmdconfig.installcmd, stdout=DEVNULL, stderr=DEVNULL)
+    from PyQt5.QtWidgets import QApplication, QMainWindow, QLineEdit, QPushButton, QHBoxLayout, QVBoxLayout, QWidget, QMessageBox, QDialog, QLabel,QDialogButtonBox
+    from PyQt5.QtWebEngineWidgets import QWebEngineView
+    from PyQt5.QtCore import QUrl
+except ImportError as e:
+    CustomDialog.NewOkDialog("Error", msgconfig.ErrorMsg.importErrorMsg(e))
+    exit(1)
 import sys
-from dialog import CustomDialog
 
 
 class SimpleBrowser(QMainWindow):
     def __init__(self):
         super().__init__()
         
-        self.setGeometry(100, 100, 1000, 600)
-        dlg = CustomDialog.NewYesNoDialog(msgconfig.openBrowserConfirmation[0], msgconfig.openBrowserConfirmation[1])
-        dlg_out = dlg.exec_()
-        if dlg_out == QMessageBox.Yes: pass
-        if dlg_out == QMessageBox.No: exit(1)
+        self.setGeometry(browser_config.windowDimensions[0], browser_config.windowDimensions[1], browser_config.windowDimensions[2], browser_config.windowDimensions[3])
+        
         # Create browser widget
         self.browser = QWebEngineView()
         self.browser.setUrl(QUrl(browser_config.startingpage))
-        self.showFullScreen()
+        if browser_config.runMode.lower() == "fullscreen": self.showFullScreen()
+        if browser_config.runMode.lower() == "maximized": self.showMaximized()
+        if browser_config.runMode.lower() == "minimized": self.showMinimized()
+        if browser_config.runMode.lower() == "normal": self.showNormal()
+        if browser_config.runMode.lower() not in ['normal', 'minimized', 'maximized', 'fullscreen']:
+            CustomDialog.NewOkDialog("Error", msgconfig.ErrorMsg.invalidParamError)
+            exit(1)
         # Create navigation bar
         self.url_bar = QLineEdit()
-        self.url_bar.returnPressed.connect(self.navigate_to_home)
-        self.url_bar.setDisabled(True)
+        self.url_bar.returnPressed.connect(self.navigateToURL)
+        self.url_bar.setDisabled(browser_config.urlBarDisabled)
         self.go_btn = QPushButton(msgconfig.ButtonText.homeButton)
         self.go_btn.clicked.connect(self.navigate_to_home)
 
@@ -60,6 +66,10 @@ class SimpleBrowser(QMainWindow):
 
         # Update URL bar when URL changes
         self.browser.urlChanged.connect(self.update_url_bar)
+    def navigateToURL(self):
+        if not self.url_bar.text().startswith(("https://", "http://")):
+            self.url_bar.setText("http://" + self.url_bar.text())
+        self.browser.setUrl(QUrl(self.url_bar.text()))
 
     def navigate_to_home(self):
         
@@ -69,16 +79,9 @@ class SimpleBrowser(QMainWindow):
         self.url_bar.setText(q.toString())
         if str(self.browser.url().toString()).startswith(tuple(browser_config.url_blocklist)):
             self.browser.setUrl(QUrl(browser_config.homepage))
-            self.showOkdialog(msgconfig.ErrorMsg.siteBlockedError[0], msgconfig.ErrorMsg.siteBlockedError[1])
+            CustomDialog.NewOkDialog(msgconfig.ErrorMsg.siteBlockedError[0], msgconfig.ErrorMsg.siteBlockedError[1])
         
-    def showOkDialog(self, title, text):
-        dialog = QMessageBox(self)
-        dialog.setWindowTitle(str(title))
-        dialog.setText(str(text))
-        dialog.setStandardButtons(QMessageBox.Ok)
-
-        
-        dialog.exec_()
+    
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)

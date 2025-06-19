@@ -1,3 +1,3 @@
 @echo off
-
-py "C:\Program Files\Poly Browser\main.py"
+echo Loading...
+py "C:\Program Files (x86)\Poly Browser\main.py"
