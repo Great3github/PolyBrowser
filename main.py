@@ -1,9 +1,9 @@
-CurrentVersion = "1.2"
+
 import subprocess
 from msg import cmdconfig, msgconfig
 from dialog import CustomDialog
 import browser_config
-from internal import about
+from internal import pb_url
 from subprocess import DEVNULL, STDOUT
 try:
     subprocess.run(cmdconfig.installcmd, stdout=DEVNULL, stderr=DEVNULL)
@@ -73,8 +73,9 @@ class SimpleBrowser(QMainWindow):
         if self.url_bar.text().startswith("pb:") and browser_config.pbUrlsEnabled:
             if self.url_bar.text() == "pb:exit" and browser_config.exitURLEnabled: exit()
             elif self.url_bar.text() == "pb:exit": self.browser.setUrl(QUrl(""))
-            if self.url_bar.text() == "pb:about" and browser_config.abouURLEnabled: about.ShowAbout()
+            if self.url_bar.text() == "pb:about" and browser_config.aboutURLEnabled: pb_url.ShowAbout()
             elif self.url_bar.text() == "pb:about": self.browser.setUrl(QUrl(""))
+            if self.url_bar.text() == "pb:policy" and browser_config.policyURLEnabled: pb_url.ShowPolicy()
 
         for url in browser_config.url_blocklist:
             if url in self.url_bar.text():

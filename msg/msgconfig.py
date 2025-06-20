@@ -1,4 +1,7 @@
-CURRENTVERSION="1.2"
+import sys
+sys.path.append("..")
+import browser_config
+CURRENTVERSION="1.3"
 # title, msg
 openBrowserConfirmation = ["", "Are you sure you want to start the browser?"]
 # error msgs
@@ -16,3 +19,7 @@ class ButtonText():
     refreshButton = "Refresh"
 class InternalPageContent():
     aboutText = ["About This Program", f"Poly Browser version {CURRENTVERSION}\nDeveloped by Matt Fichter with the help of AI"]
+    policyText = f"""
+    Browser Configuration:
+    url_allowlist: {browser_config.url_allowlist}
+"""

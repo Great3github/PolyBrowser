@@ -13,5 +13,6 @@ showHomeButton = False
 #enablePolicyConfirm = True
 # pb: url settings below
 pbUrlsEnabled = True
-exitURLEnabled = False
-abouURLEnabled = True
+exitURLEnabled = True
+aboutURLEnabled = True
+policyURLEnabled = True
